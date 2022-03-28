@@ -3,6 +3,7 @@ histdb-fzf-widget() {
   output=$( \
     HISTDB_HOST=$HISTDB_HOST \
     HISTDB_SESSION=$HISTDB_SESSION \
+    HISTDB_FILE=$HISTDB_FILE \
     /work/zsh-histdb-rust/target/debug/zsh-histdb-rust "$origquery"\
   )
 

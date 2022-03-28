@@ -7,16 +7,6 @@ use std::env;
 use std::thread;
 use std::time::SystemTime;
 
-fn get_date_format() -> String {
-    let key = "HISTDB_FZF_FORCE_DATE_FORMAT";
-    let forced_dateformat = env::var(key).unwrap_or("non-us".to_string()).to_lowercase();
-
-    if forced_dateformat == "us" {
-        return "%m/%d/%Y".to_string();
-    } else {
-        return "%d/%m/%Y".to_string();
-    }
-}
 
 #[derive(PartialEq, Enum, Copy, Clone)]
 enum Location {
@@ -102,24 +92,41 @@ impl SkimItem for History {
     }
 }
 
+/// Get the default (which is non us! or the us date format)
+/// - [ ] Read from locale to determine default
+fn get_date_format() -> String {
+    let key = "HISTDB_FZF_FORCE_DATE_FORMAT";
+    let forced_dateformat = env::var(key).unwrap_or("non-us".to_string()).to_lowercase();
+
+    if forced_dateformat == "us" {
+        return "%m/%d/%Y".to_string();
+    } else {
+        return "%d/%m/%Y".to_string();
+    }
+}
+
+/// Get the histdb file from the environment
 fn get_histdb_database() -> String {
     let key = "HISTDB_FILE";
     let db_file = env::var(key).unwrap_or(String::from(""));
     return db_file.to_string();
 }
 
+/// Get the histdb session from the environment
 fn get_current_session_id() -> String {
     let key = "HISTDB_SESSION";
     let session_id = env::var(key).unwrap_or(String::from(""));
     return session_id.to_string();
 }
 
+/// Get the current working directory
 fn get_current_dir() -> String {
     let current_dir = env::current_dir().unwrap();
     let cdir_string = current_dir.to_str().unwrap();
     return cdir_string.to_string();
 }
 
+/// Get the current histdb host from the environment
 fn get_current_host() -> String {
     let mut host = env::var("HISTDB_HOST").unwrap_or(String::from(""));
     if host.starts_with("'") && host.ends_with("'") {
@@ -127,6 +134,43 @@ fn get_current_host() -> String {
     }
     return host.to_string();
 }
+
+fn prepare_entries(location: &Location, grouped: bool, tx_item: SkimItemSender) {
+    let conn_res = Connection::open(get_histdb_database());
+    if conn_res.is_err() {
+        return;
+    }
+    let conn = conn_res.unwrap();
+    let s = build_query_string(&location, grouped);
+
+    let stmt_result = conn.prepare(&s);
+    if stmt_result.is_err() {
+        return;
+    }
+    let mut stmt = stmt_result.unwrap();
+
+    let cats = stmt.query_map([], |row| {
+        Ok(History {
+            id: row.get(0)?,
+            cmd: row.get(1)?,
+            start: row.get(2)?,
+            exit_status: row.get(3)?,
+            duration: row.get(4)?,
+            count: row.get(5)?,
+            session: row.get(6)?,
+            host: row.get(7)?,
+            dir: row.get(8)?,
+        })
+    });
+    for person in cats.unwrap() {
+        if person.is_ok() {
+            let x = person.unwrap();
+            let _ = tx_item.send(Arc::new(x));
+        }
+    }
+    drop(tx_item);
+}
+
 
 fn show_history(thequery: String) -> Result<String> {
     let mut location = Location::Session;
@@ -158,10 +202,12 @@ fn show_history(thequery: String) -> Result<String> {
             "F1: Session, F2: Directory, F3: Host, F4: Everywhere -- F5: Toggle group"
         );
 
+
         let options = SkimOptionsBuilder::default()
             .height(Some("100%"))
             .multi(false)
             .reverse(true)
+            .prompt(Some("history >>"))
             .query(Some(&query))
             .bind(vec![
                 "f1:abort",
@@ -173,45 +219,14 @@ fn show_history(thequery: String) -> Result<String> {
             ])
             .header(Some(&title))
             .preview(Some("")) // preview should be specified to enable preview window
+            .nosort(true)
             .build()
             .unwrap();
 
         let (tx_item, rx_item): (SkimItemSender, SkimItemReceiver) = unbounded();
 
         let handle = thread::spawn(move || {
-            let conn_res = Connection::open(get_histdb_database());
-            if conn_res.is_err() {
-                return;
-            }
-            let conn = conn_res.unwrap();
-            let s = build_query_string(&location, grouped);
-
-            let stmt_result = conn.prepare(&s);
-            if stmt_result.is_err() {
-                return;
-            }
-            let mut stmt = stmt_result.unwrap();
-
-            let cats = stmt.query_map([], |row| {
-                Ok(History {
-                    id: row.get(0)?,
-                    cmd: row.get(1)?,
-                    start: row.get(2)?,
-                    exit_status: row.get(3)?,
-                    duration: row.get(4)?,
-                    count: row.get(5)?,
-                    session: row.get(6)?,
-                    host: row.get(7)?,
-                    dir: row.get(8)?,
-                })
-            });
-            for person in cats.unwrap() {
-                if person.is_ok() {
-                    let x = person.unwrap();
-                    let _ = tx_item.send(Arc::new(x));
-                }
-            }
-            drop(tx_item);
+            prepare_entries(&location, grouped, tx_item);
         });
 
         let selected_items = Skim::run_with(&options, Some(rx_item));
