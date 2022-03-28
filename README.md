@@ -1,3 +1,16 @@
+
+```
+#    #   ##   #####  #    # # #    #  ####  
+#    #  #  #  #    # ##   # # ##   # #    # 
+#    # #    # #    # # #  # # # #  # #      
+# ## # ###### #####  #  # # # #  # # #  ### 
+##  ## #    # #   #  #   ## # #   ## #    # 
+#    # #    # #    # #    # # #    #  ####
+```
+
+This is currently work in progress. You have to compile it yourself. Works on my machine (contains hard coded paths). 
+
+
 # zsh-histdb-skim
 
 This is a reimplementation of https://github.com/m42e/zsh-histdb-fzf in rust and using skim as a library.
@@ -14,6 +27,12 @@ This should result in better performance, responsiveness and a more stable behav
 skim is available in rust. I have never tried rust with a purpose before. I wanted to give it a try and learn something new.
 
 ## How it works
+
+## Building
+
+```
+cargo build
+```
 
 # TODO
 - Describe installation
