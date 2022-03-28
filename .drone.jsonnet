@@ -6,6 +6,7 @@ local Pipeline(name, image) = {
     {
       name: "test",
       image: image,
+      pull: "if-not-exists",
       commands: [
         "cargo build --verbose --all --release",
         "cargo test --verbose --all"
