@@ -1,5 +1,5 @@
 [package]
-name = "zsh-histdb-rust"
+name = "zsh-histdb-skim"
 version = "0.1.0"
 edition = "2021"
 
@@ -12,3 +12,4 @@ tuikit = "*"
 chrono = "*"
 enum-map = "*"
 log = "0.4"
+textwrap = "0.15"

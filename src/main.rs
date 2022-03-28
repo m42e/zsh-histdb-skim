@@ -6,7 +6,7 @@ use skim::prelude::*;
 use std::env;
 use std::thread;
 use std::time::SystemTime;
-
+use textwrap::fill;
 
 #[derive(PartialEq, Enum, Copy, Clone)]
 enum Location {
@@ -29,64 +29,64 @@ struct History {
     dir: String,
 }
 
+fn get_epoch_start_of_day() -> u64 {
+    let now = SystemTime::now();
+    let now_secs = now
+        .duration_since(SystemTime::UNIX_EPOCH)
+        .unwrap_or_default()
+        .as_secs();
+
+    let seconds_since_midnight = now_secs % (24 * 3600);
+    now_secs - seconds_since_midnight
+}
+
+impl History {
+    fn format_date(&self, full: bool) -> String {
+        let starttime = NaiveDateTime::from_timestamp(self.start as i64, 0);
+        if full {
+            let mut dateinfo = String::from("");
+            dateinfo.push_str(&get_date_format());
+            dateinfo.push_str(" %H:%M");
+            return format!("{}", starttime.format(&dateinfo));
+        } else if self.start > get_epoch_start_of_day() {
+            return format!("{}", starttime.format("%H:%M"));
+        } else {
+            return format!("{}", starttime.format(&get_date_format()));
+        }
+    }
+
+    fn format_or_none(x: Option<i64>) -> String {
+        if x.is_some() {
+            format!("{}", x.unwrap())
+        } else {
+            "\x1b[37;1m<NONE>\x1b[0m".to_string()
+        }
+    }
+}
+
 impl SkimItem for History {
     fn text(&self) -> Cow<str> {
-        let now = SystemTime::now();
-        let now_secs = now
-            .duration_since(SystemTime::UNIX_EPOCH)
-            .unwrap_or_default()
-            .as_secs();
-
-        let seconds_since_midnight = now_secs % (24 * 3600);
-        let starttime = NaiveDateTime::from_timestamp(self.start as i64, 0);
-        let mut dateinfo = String::from("");
-        if self.start > (now_secs - seconds_since_midnight) {
-            dateinfo.push_str(&format!("{}", starttime.format("%H:%M")));
-        } else {
-            dateinfo.push_str(&format!("{}", starttime.format(&get_date_format())));
-        }
-
-        let information = format!("{:10} {}", dateinfo, self.cmd);
+        let information = format!("{:10} {}", self.format_date(false), self.cmd);
         Cow::Owned(information)
     }
 
     fn preview(&self, _context: PreviewContext) -> ItemPreview {
-        let starttime = NaiveDateTime::from_timestamp(self.start as i64, 0);
-
-        let mut timeformat = String::from("");
-        timeformat.push_str(&get_date_format());
-        timeformat.push_str(" %H:%M");
-
         let mut information = String::from(format!("\x1b[1mDetails for {}\x1b[0m\n\n", self.id));
 
         let mut tformat = |name: &str, value: &str| {
             information.push_str(&format!("\x1b[1m{:20}\x1b[0m{}\n", name, value));
         };
 
-        let duration = || -> String {
-            if self.duration.is_some() {
-                format!("{}", self.duration.unwrap())
-            } else {
-                "<NONE>".to_string()
-            }
-        }();
-        tformat("Runtime", &duration);
+        tformat("Runtime", &History::format_or_none(self.duration));
         tformat("Host", &self.host);
         tformat("Executed", &self.count.to_string());
         tformat("Directory", &self.dir);
-        let status = || -> String {
-            if self.exit_status.is_some() {
-                format!("{}", self.exit_status.unwrap())
-            } else {
-                "<NONE>".to_string()
-            }
-        }();
-        tformat("Exit Status", &status);
+        tformat("Exit Status", &History::format_or_none(self.exit_status));
         tformat("Session", &self.session.to_string());
-        tformat("Start Time", &starttime.format(&timeformat).to_string());
+        tformat("Start Time", &self.format_date(false));
         information.push_str(&format!(
-            "\x1b[1m{:20}\x1b[0m\n\n{}\n",
-            "Command", &self.cmd
+            "\x1b[1mCommand\x1b[0m\n\n{}\n",
+            &fill(&self.cmd, _context.width)
         ));
         ItemPreview::AnsiText(information)
     }
@@ -171,7 +171,6 @@ fn prepare_entries(location: &Location, grouped: bool, tx_item: SkimItemSender) 
     drop(tx_item);
 }
 
-
 fn show_history(thequery: String) -> Result<String> {
     let mut location = Location::Session;
     let mut grouped = true;
@@ -201,7 +200,6 @@ fn show_history(thequery: String) -> Result<String> {
             &extra_info,
             "F1: Session, F2: Directory, F3: Host, F4: Everywhere -- F5: Toggle group"
         );
-
 
         let options = SkimOptionsBuilder::default()
             .height(Some("100%"))
@@ -314,7 +312,8 @@ fn build_query_string(theloc: &Location, grouped: bool) -> String {
     }
     query.push_str(" as count, history.session, places.host, places.dir ");
     query.push_str(" from history ");
-    query.push_str("
+    query.push_str(
+        "
         left join commands on history.command_id = commands.id
         left join places on history.place_id = places.id",
     );
@@ -344,6 +343,6 @@ fn build_query_string(theloc: &Location, grouped: bool) -> String {
     if grouped {
         query.push_str(" group by history.command_id, history.place_id");
     }
-    query.push_str( " order by max_start desc");
+    query.push_str(" order by max_start desc");
     return query;
 }
