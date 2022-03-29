@@ -8,7 +8,8 @@ local Pipeline(name, image) = {
       image: image,
       pull: "if-not-exists",
       commands: [
-        "cargo build --verbose --all --release --out-dir dist",
+        "cargo build --verbose --all --release",
+        "ls -alR",
         "cargo test --verbose --all"
       ]
     },
