@@ -19,12 +19,12 @@ local Pipeline(name, image) = {
       image: "alpine:latest",
       pull: "if-not-exists",
       environment:{
-        api_key: {
+        GH_TOKEN: {
           from_secret: "github_release",
         },
       },
       commands: [
-        "export GH_TOKEN=${api_key}",
+        "echo $GH_TOKEN",
         "export GH_REPO=m42e/zsh-histdb-skim",
         "apk --no-cache add wget tar",
         "wget https://github.com/cli/cli/releases/download/v2.6.0/gh_2.6.0_linux_amd64.tar.gz",
