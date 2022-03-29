@@ -9,7 +9,7 @@ local Pipeline(name, image) = {
       pull: "if-not-exists",
       commands: [
         "cargo build --verbose --all --release",
-        "ls -alR",
+        "ls -alR /drone/src/",
         "cargo test --verbose --all"
       ]
     },
