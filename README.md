@@ -28,6 +28,13 @@ Install the plugin, e.g. using [zplug](https://github.com/zplug/zplug).
 It downloads the binary (if available) automatically. You can do manually by calling `histdb-skim-download`.
 
 
+The plugin calls `bindkey` but some other plugins may overwrite. In this case you would have to do it yourself:
+
+```
+bindkey '^R' histdb-skim-widget
+```
+
+
 ## Building
 
 ```
