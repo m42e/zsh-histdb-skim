@@ -20,7 +20,7 @@ local Pipeline(name, version) = {
       commands: [
         "cargo build --verbose --all --release --target x86_64-apple-darwin",
         "mkdir -p dist",
-        "cp target/release/zsh-histdb-skim dist/zsh-histdb-skim-darwin-x64",
+        "cp target/x86_64-apple-darwin/release/zsh-histdb-skim dist/zsh-histdb-skim-darwin-x64",
         "cargo test --verbose --all"
       ]
     },
