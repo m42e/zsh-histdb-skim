@@ -29,6 +29,11 @@ local Pipeline(name, image) = {
           'dist/*',
         ],
         draft: true,
+        commands: [
+          "export DRONE_REPO_OWNER=m42e",
+          "export DRONE_REPO_NAME=zsh-histdb-skim",
+          '/bin/drone-github-release'
+        ]
       },
       when: {
         event: 'tag'
