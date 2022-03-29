@@ -1,16 +1,26 @@
-local Pipeline(name, image) = {
+local Pipeline(name, version) = {
   kind: "pipeline",
   type: "docker",
   name: name,
   steps: [
     {
-      name: "test",
-      image: image,
+      name: "build",
+      image: "rust" + version,
       pull: "if-not-exists",
       commands: [
         "cargo build --verbose --all --release",
         "mkdir dist",
         "cp target/release/zsh-histdb-skim dist/zsh-histdb-skim-linux-x64",
+      ]
+    },
+    {
+      name: "build darwin",
+      image: "joseluisq/rust-linux-darwin-builder:" + version
+      pull: "if-not-exists",
+      commands: [
+        "cargo build --verbose --all --release --target x86_64-apple-darwin",
+        "mkdir dist",
+        "cp target/release/zsh-histdb-skim dist/zsh-histdb-skim-darwin-x64",
         "cargo test --verbose --all"
       ]
     },
@@ -32,10 +42,6 @@ local Pipeline(name, image) = {
         "chmod a+x gh_2.6.0_linux_amd64/bin/gh",
         "gh_2.6.0_linux_amd64/bin/gh release create ${DRONE_TAG} dist/*"
       ],
-      settings: {
-        DRONE_REPO_OWNER: "m42e",
-        DRONE_REPO_NAME: "zsh-histdb-skim",
-      },
       when: {
         event: 'tag'
       },
@@ -44,5 +50,5 @@ local Pipeline(name, image) = {
 };
 
 [
-  Pipeline("rust-1-59", "rust:1.59"),
+  Pipeline("rust-1-59", "1.59"),
 ]
