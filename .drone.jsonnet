@@ -9,7 +9,7 @@ local Pipeline(name, version) = {
       pull: "if-not-exists",
       commands: [
         "cargo build --verbose --all --release",
-        "mkdir dist",
+        "mkdir -p dist",
         "cp target/release/zsh-histdb-skim dist/zsh-histdb-skim-linux-x64",
       ]
     },
@@ -19,7 +19,7 @@ local Pipeline(name, version) = {
       pull: "if-not-exists",
       commands: [
         "cargo build --verbose --all --release --target x86_64-apple-darwin",
-        "mkdir dist",
+        "mkdir -p dist",
         "cp target/release/zsh-histdb-skim dist/zsh-histdb-skim-darwin-x64",
         "cargo test --verbose --all"
       ]
