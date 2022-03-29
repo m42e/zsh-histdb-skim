@@ -9,7 +9,8 @@ local Pipeline(name, image) = {
       pull: "if-not-exists",
       commands: [
         "cargo build --verbose --all --release",
-        "ls -alR /drone/src/",
+        "mkdir dist",
+        "cp target/release/zsh-histdb-skim dist/zsh-histdb-skim-linux-x64",
         "cargo test --verbose --all"
       ]
     },
@@ -21,7 +22,10 @@ local Pipeline(name, image) = {
         api_key: {
           from_secret: "github_release",
         },
-        files: 'dist/*',
+        files: [
+          'target/release/zsh-histdb-skim',
+          'dist/*',
+        ],
         draft: true,
       },
       when: {
