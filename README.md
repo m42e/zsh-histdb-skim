@@ -5,7 +5,7 @@ This is a reimplementation of https://github.com/m42e/zsh-histdb-fzf in rust and
 ## Why
 
 [zsh-histdb-fzf](https://github.com/m42e/zsh-histdb-fzf) works, but it is a bit quirky. It has for sure some flaws, regarding responsiveness and communication with processes.
-[skim](https://github.com/lotabout/skim) offers a fzf like behavior and is available as library in rust.
+[skim](https://github.com/lotabout/skim) offers a fzf like behavior and is available as library in rust. It lacks some highlighting in the header, and has a bit different order/matching algorithm.
 
 This should result in better performance, responsiveness and a more stable behavior.
 
@@ -37,9 +37,8 @@ mv target/release/zsh-histdb-skim bin
 ```
 
 # TODO
-- Describe installation
-- Add builds in github actions
-- provide releases
-- automate download of executable
 - improve rust code
 
+# Apologies
+
+While I stole the idea from myself, this is my first rust project ever. So I would be glad for tips and improvement PRs.
