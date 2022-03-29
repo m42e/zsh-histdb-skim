@@ -1,5 +1,6 @@
 THIS_PATH=${0:a:h}
 BIN_PATH=${THIS_PATH}/bin/zsh-histdb-skim
+BIN_DIR=${THIS_PATH}/bin
 
 histdb-skim-get-os(){
   UNAME_STR=`uname -a`
@@ -21,6 +22,7 @@ histdb-skim-download(){
     echo "Sorry, you have to do it yourself"
   else
     echo "Downloading binary"
+    mkdir -p ${BIN_DIR}
     curl -s -JL https://github.com/m42e/zsh-histdb-skim/releases/download/$(histdb-skim-get-latest-version)/zsh-histdb-skim-$(histdb-skim-get-os) -o ${BIN_PATH}
     chmod +x ${BIN_PATH}
   fi
