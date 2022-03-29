@@ -19,6 +19,8 @@ local Pipeline(name, image) = {
       image: "plugins/github-release",
       pull: "if-not-exists",
       settings: {
+        DRONE_REPO_OWNER: "m42e",
+        DRONE_REPO_NAME: "zsh-histdb-skim",
         api_key: {
           from_secret: "github_release",
         },
