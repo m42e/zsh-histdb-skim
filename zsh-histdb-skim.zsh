@@ -1,3 +1,6 @@
+THIS_PATH=${0:a:h}
+BIN_PATH=${THIS_PATH}/bin/zsh-histdb-skim
+
 histdb-skim-get-os(){
   UNAME_STR=`uname -a`
   if [[ ( $UNAME_STR =~ '.*Darwin.*' ) && ( $UNAME_STR =~ '.*x86_64.*') ]]; then
@@ -15,20 +18,29 @@ histdb-skim-get-latest-version(){
 histdb-skim-download(){
   if [[ -z $(histdb-skim-get-os) ]]; then
     echo "Could not find prebuild executable"
-    echo "You have to do it yourself"
+    echo "Sorry, you have to do it yourself"
   else
-    curl -s -JLO https://github.com/m42e/zsh-histdb-skim/releases/download/$(histdb-skim-get-latest-version)/zsh-histdb-skim-$(histdb-skim-get-os)
+    echo "Downloading binary"
+    curl -s -JL https://github.com/m42e/zsh-histdb-skim/releases/download/$(histdb-skim-get-latest-version)/zsh-histdb-skim-$(histdb-skim-get-os) -o ${BIN_PATH}
+    chmod +x ${BIN_PATH}
   fi
 }
 
 
-histdb-fzf-widget() {
+histdb-skim-ensure () {
+  if [[ ! -f ${BIN_PATH} ]]; then
+    histdb-skim-download
+  fi
+}
+
+histdb-skim-widget() {
+  histdb-skim-ensure
   origquery=${BUFFER}
   output=$( \
     HISTDB_HOST=$HISTDB_HOST \
     HISTDB_SESSION=$HISTDB_SESSION \
     HISTDB_FILE=$HISTDB_FILE \
-    /work/zsh-histdb-rust/target/debug/zsh-histdb-rust "$origquery"\
+    ${BIN_PATH} "$origquery"\
   )
 
   if [ $? -eq 0 ]; then
@@ -41,5 +53,5 @@ histdb-fzf-widget() {
   zle redisplay
 }
 
-zle     -N   histdb-fzf-widget
-bindkey '^R' histdb-fzf-widget
+zle     -N   histdb-skim-widget
+bindkey '^R' histdb-skim-widget
