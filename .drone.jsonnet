@@ -40,7 +40,7 @@ local Pipeline(name, version) = {
         "wget https://github.com/cli/cli/releases/download/v2.6.0/gh_2.6.0_linux_amd64.tar.gz",
         "tar -zxvf gh_2.6.0_linux_amd64.tar.gz",
         "chmod a+x gh_2.6.0_linux_amd64/bin/gh",
-        "gh_2.6.0_linux_amd64/bin/gh release create ${DRONE_TAG} dist/*"
+        "gh_2.6.0_linux_amd64/bin/gh release create --target ${DRONE_COMMIT} ${DRONE_TAG} dist/*",
       ],
       when: {
         event: 'tag'
