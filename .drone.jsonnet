@@ -16,16 +16,16 @@ local Pipeline(name, image) = {
       name: "release",
       image: "plugins/github-release",
       pull: "if-not-exists",
-      settings: [
-        api_key: [
-          from_secret: github_release,
-        ],
+      settings: {
+        api_key: {
+          from_secret: "github_release",
+        },
         files: 'dist/*',
         draft: true,
-      ],
-      when: [
+      },
+      when: {
         event: 'tag'
-      ],
+      },
     }
   ]
 };
