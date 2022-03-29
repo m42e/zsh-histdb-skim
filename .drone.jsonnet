@@ -5,7 +5,7 @@ local Pipeline(name, version) = {
   steps: [
     {
       name: "build",
-      image: "rust" + version,
+      image: "rust:" + version,
       pull: "if-not-exists",
       commands: [
         "cargo build --verbose --all --release",
@@ -15,7 +15,7 @@ local Pipeline(name, version) = {
     },
     {
       name: "build darwin",
-      image: "joseluisq/rust-linux-darwin-builder:" + version
+      image: "joseluisq/rust-linux-darwin-builder:" + version,
       pull: "if-not-exists",
       commands: [
         "cargo build --verbose --all --release --target x86_64-apple-darwin",
