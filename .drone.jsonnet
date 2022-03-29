@@ -16,23 +16,24 @@ local Pipeline(name, image) = {
     },
     {
       name: "release",
-      image: "plugins/github-release",
+      image: "alpine:latest",
       pull: "if-not-exists",
-      settings: {
-        DRONE_REPO_OWNER: "m42e",
-        DRONE_REPO_NAME: "zsh-histdb-skim",
+      environment:{
         api_key: {
           from_secret: "github_release",
         },
-        files: [
-          'target/release/zsh-histdb-skim',
-          'dist/*',
-        ],
-        draft: true,
+      },
+      settings: {
+        DRONE_REPO_OWNER: "m42e",
+        DRONE_REPO_NAME: "zsh-histdb-skim",
         commands: [
-          "export DRONE_REPO_OWNER=m42e",
-          "export DRONE_REPO_NAME=zsh-histdb-skim",
-          '/bin/drone-github-release'
+          "export GH_TOKEN=${api_key}",
+          "export GH_REPO=m42e/zsh-histdb-skim",
+          "apk --no-cache add wget tar",
+          "wget https://github.com/cli/cli/releases/download/v2.6.0/gh_2.6.0_linux_amd64.tar.gz",
+          "tar -zxvf gh_2.6.0_linux_amd64.tar.gz",
+          "chmod a+x gh_2.6.0_linux_amd64/bin/gh",
+          'gh_2.6.0_linux_amd64/bin/gh release create ${DRONE_TAG} dist/*",'
         ]
       },
       when: {
