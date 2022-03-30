@@ -11,7 +11,7 @@ This should result in better performance, responsiveness and a more stable behav
 
 ## Why rust?
 
-skim is available in rust. I have never tried rust with a purpose before. I wanted to give it a try and learn something new.
+[skim](https://github.com/lotabout/skim) is available in rust. I have never tried rust with a purpose before. I wanted to give it a try and learn something new.
 
 ## How it works
 
@@ -46,6 +46,6 @@ mv target/release/zsh-histdb-skim bin
 # TODO
 - improve rust code
 
-# Apologies
+# Apologies 😉
 
 While I stole the idea from myself, this is my first rust project ever. So I would be glad for tips and improvement PRs.
