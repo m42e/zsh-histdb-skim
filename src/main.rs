@@ -325,11 +325,11 @@ fn build_query_string(theloc: &Location, grouped: bool) -> String {
     };
     match theloc {
         Location::Session => {
-            query.push_str(&format!(" session in ({}) and ", &get_current_session_id()))
+            query.push_str(&format!(" session in ({}) and ", &get_current_session_id()));
         }
 
         Location::Directory => {
-            query.push_str(&format!(" (places.dir like '{}') and ", &get_current_dir()))
+            query.push_str(&format!(" (places.dir like '{}') and ", &get_current_dir()));
         }
 
         _ => {}
