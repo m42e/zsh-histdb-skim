@@ -171,10 +171,6 @@ fn prepare_entries(location: &Location, grouped: bool, tx_item: SkimItemSender) 
     drop(tx_item);
 }
 
-fn restore_screen(){
-    println!("\x1b[2J\x1b[?47l\x1b8");
-}
-
 fn generate_title(location: &Location) -> String {
     let extra_info = |theloc: &Location| -> String {
         return match theloc {
@@ -229,7 +225,6 @@ fn show_history(thequery: String) -> Result<String> {
     if get_current_session_id() == "" {
         location = Location::Directory;
     }
-
     loop {
         let title = generate_title(&location);
 
@@ -239,7 +234,6 @@ fn show_history(thequery: String) -> Result<String> {
             .reverse(true)
             .prompt(Some("history >>"))
             .query(Some(&query))
-            .no_clear(false)
             .bind(vec![
                 "f1:abort",
                 "f2:abort",
@@ -269,11 +263,9 @@ fn show_history(thequery: String) -> Result<String> {
             query = sel.query;
             match sel.final_key {
                 Key::ESC | Key::Ctrl('c') | Key::Ctrl('d') | Key::Ctrl('z') => {
-                    restore_screen();
                     std::process::exit(1);
                 }
                 Key::Enter => {
-                    restore_screen();
                     return Ok(format!(
                         "{}",
                         ((*sel.selected_items[0]).as_any().downcast_ref::<History>())
