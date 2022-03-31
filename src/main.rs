@@ -175,6 +175,53 @@ fn restore_screen(){
     println!("\x1b[2J\x1b[?47l\x1b8");
 }
 
+fn generate_title(location: &Location) -> String {
+    let extra_info = |theloc: &Location| -> String {
+        return match theloc {
+            Location::Session => get_current_session_id(),
+            Location::Directory => get_current_dir(),
+            Location::Machine => get_current_host(),
+            _ => String::from(""),
+        };
+    }(&location);
+
+    let location_map = enum_map! {
+        Location::Session => "Session location history",
+        Location::Directory => "Directory location history",
+        Location::Machine => "Machine location history",
+        Location::Everywhere => "Everywhere",
+    };
+
+    let header_map = enum_map! {
+        Location::Session =>"
+ ┏━━━━━━━━━━━┱─────────────┬────────┬──────────────┐
+ ┃F1: Session┃F2: Directory│F3: Host│F4: Everywhere│ F5: Toggle group
+━┛           ┗━━━━━━━━━━━━━┷━━━━━━━━┷━━━━━━━━━━━━━━┷━━━━━━━━━━━━━━━━━",
+        Location::Directory => "
+ ┌───────────┲━━━━━━━━━━━━━┱────────┬──────────────┐
+ │F1: Session┃F2: Directory┃F3: Host│F4: Everywhere│ F5: Toggle group
+━┷━━━━━━━━━━━┛             ┗━━━━━━━━┷━━━━━━━━━━━━━━┷━━━━━━━━━━━━━━━━━",
+
+        Location::Machine => "
+ ┌───────────┬─────────────┲━━━━━━━━┱──────────────┐
+ │F1: Session│F2: Directory┃F3: Host┃F4: Everywhere│ F5: Toggle group
+━┷━━━━━━━━━━━┷━━━━━━━━━━━━━┛        ┗━━━━━━━━━━━━━━┷━━━━━━━━━━━━━━━━━",
+
+        Location::Everywhere => "
+ ┌───────────┬─────────────┬────────┲━━━━━━━━━━━━━━┓
+ │F1: Session│F2: Directory│F3: Host┃F4: Everywhere┃ F5: Toggle group
+━┷━━━━━━━━━━━┷━━━━━━━━━━━━━┷━━━━━━━━┛              ┗━━━━━━━━━━━━━━━━━",
+    };
+
+    let title = format!(
+        "{} {}\n{}\n",
+        &location_map[location.clone()],
+        &extra_info,
+        &header_map[location.clone()],
+    );
+    return title.to_string();
+}
+
 fn show_history(thequery: String) -> Result<String> {
     let mut location = Location::Session;
     let mut grouped = true;
@@ -184,27 +231,7 @@ fn show_history(thequery: String) -> Result<String> {
     }
 
     loop {
-        let map = enum_map! {
-            Location::Session => "Session location history",
-            Location::Directory => "Directory location history",
-            Location::Machine => "Machine location history",
-            Location::Everywhere => "Everywhere",
-        };
-        let extra_info = |theloc: &Location| -> String {
-            return match theloc {
-                Location::Session => get_current_session_id(),
-                Location::Directory => get_current_dir(),
-                Location::Machine => get_current_host(),
-                _ => String::from(""),
-            };
-        }(&location);
-
-        let title = format!(
-            "{} {}\n{}\n―――――――――――――――――――――――――",
-            &map[location.clone()],
-            &extra_info,
-            "F1: Session, F2: Directory, F3: Host, F4: Everywhere -- F5: Toggle group"
-        );
+        let title = generate_title(&location);
 
         let options = SkimOptionsBuilder::default()
             .height(Some("100%"))
@@ -333,11 +360,11 @@ fn build_query_string(theloc: &Location, grouped: bool) -> String {
     };
     match theloc {
         Location::Session => {
-            query.push_str(&format!(" session in ({}) and ", &get_current_session_id()))
+            query.push_str(&format!(" session in ({}) and ", &get_current_session_id()));
         }
 
         Location::Directory => {
-            query.push_str(&format!(" (places.dir like '{}') and ", &get_current_dir()))
+            query.push_str(&format!(" (places.dir like '{}') and ", &get_current_dir()));
         }
 
         _ => {}

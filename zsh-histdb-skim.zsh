@@ -39,7 +39,7 @@ histdb-skim-widget() {
   histdb-skim-ensure
   origquery=${BUFFER}
   output=$( \
-    HISTDB_HOST=$HISTDB_HOST \
+    HISTDB_HOST=${HISTDB_HOST:-"'$(sql_escape ${HOST})'"} \
     HISTDB_SESSION=$HISTDB_SESSION \
     HISTDB_FILE=$HISTDB_FILE \
     ${BIN_PATH} "$origquery"\

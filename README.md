@@ -22,7 +22,7 @@ Well, it accesses the [zsh histdb](https://github.com/larkery/zsh-histdb). It le
 Install the plugin, e.g. using [zplug](https://github.com/zplug/zplug).
 
 ```
-  zplug 'm42e/zsh-histdb-skim', from:github, use:zsh-histdb-skim.zsh
+  zplug 'm42e/zsh-histdb-skim', from:github, use:zsh-histdb-skim.zsh, at:main
 ```
 
 It downloads the binary (if available) automatically. You can do manually by calling `histdb-skim-download`.
