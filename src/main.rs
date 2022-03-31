@@ -1,7 +1,7 @@
 extern crate skim;
 use chrono::NaiveDateTime;
 use enum_map::{enum_map, Enum};
-use rusqlite::{Connection, Result};
+use rusqlite::{Connection, Result, OpenFlags};
 use skim::prelude::*;
 use std::env;
 use std::thread;
@@ -136,7 +136,7 @@ fn get_current_host() -> String {
 }
 
 fn prepare_entries(location: &Location, grouped: bool, tx_item: SkimItemSender) {
-    let conn_res = Connection::open(get_histdb_database());
+    let conn_res = Connection::open_with_flags(get_histdb_database(), OpenFlags::SQLITE_OPEN_READ_ONLY);
     if conn_res.is_err() {
         return;
     }
@@ -171,6 +171,10 @@ fn prepare_entries(location: &Location, grouped: bool, tx_item: SkimItemSender) 
     drop(tx_item);
 }
 
+fn restore_screen(){
+    println!("\x1b[2J\x1b[?47l\x1b8");
+}
+
 fn show_history(thequery: String) -> Result<String> {
     let mut location = Location::Session;
     let mut grouped = true;
@@ -178,6 +182,7 @@ fn show_history(thequery: String) -> Result<String> {
     if get_current_session_id() == "" {
         location = Location::Directory;
     }
+
     loop {
         let map = enum_map! {
             Location::Session => "Session location history",
@@ -207,6 +212,7 @@ fn show_history(thequery: String) -> Result<String> {
             .reverse(true)
             .prompt(Some("history >>"))
             .query(Some(&query))
+            .no_clear(false)
             .bind(vec![
                 "f1:abort",
                 "f2:abort",
@@ -236,9 +242,11 @@ fn show_history(thequery: String) -> Result<String> {
             query = sel.query;
             match sel.final_key {
                 Key::ESC | Key::Ctrl('c') | Key::Ctrl('d') | Key::Ctrl('z') => {
+                    restore_screen();
                     std::process::exit(1);
                 }
                 Key::Enter => {
+                    restore_screen();
                     return Ok(format!(
                         "{}",
                         ((*sel.selected_items[0]).as_any().downcast_ref::<History>())
@@ -276,7 +284,7 @@ fn show_history(thequery: String) -> Result<String> {
 }
 
 fn main() -> Result<()> {
-    let _conn = Connection::open(get_histdb_database())?;
+    let _conn = Connection::open_with_flags(get_histdb_database(), OpenFlags::SQLITE_OPEN_READ_ONLY);
 
     let args: Vec<String> = env::args().collect();
     let query = |args: Vec<String>| -> String {
