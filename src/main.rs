@@ -27,6 +27,13 @@ struct History {
     session: i64,
     host: String,
     dir: String,
+    searchrange: [(usize, usize);1],
+}
+impl History {
+    fn new( id: i64, cmd: String, start: u64, exit_status: Option<i64>, duration: Option<i64>, count: i64, session: i64, host: String, dir: String) -> History{
+        let myvec = [(11 as usize, cmd.len() + (11 as usize))];
+        return History{id, cmd, start, exit_status, duration, count, session, host, dir, searchrange:myvec};
+    }
 }
 
 fn get_epoch_start_of_day() -> u64 {
@@ -65,6 +72,7 @@ impl History {
 }
 
 impl SkimItem for History {
+
     fn text(&self) -> Cow<str> {
         let information = format!("{:10} {}", self.format_date(false), self.cmd);
         Cow::Owned(information)
@@ -89,6 +97,9 @@ impl SkimItem for History {
             &fill(&self.cmd, _context.width)
         ));
         ItemPreview::AnsiText(information)
+    }
+     fn get_matching_ranges(&self) -> Option<&[(usize, usize)]> {
+        Some(&self.searchrange)
     }
 }
 
@@ -150,17 +161,17 @@ fn prepare_entries(location: &Location, grouped: bool, tx_item: SkimItemSender) 
     let mut stmt = stmt_result.unwrap();
 
     let cats = stmt.query_map([], |row| {
-        Ok(History {
-            id: row.get(0)?,
-            cmd: row.get(1)?,
-            start: row.get(2)?,
-            exit_status: row.get(3)?,
-            duration: row.get(4)?,
-            count: row.get(5)?,
-            session: row.get(6)?,
-            host: row.get(7)?,
-            dir: row.get(8)?,
-        })
+        Ok(History::new(
+            row.get(0)?,
+            row.get(1)?,
+            row.get(2)?,
+            row.get(3)?,
+            row.get(4)?,
+            row.get(5)?,
+            row.get(6)?,
+            row.get(7)?,
+            row.get(8)?,
+        ))
     });
     for person in cats.unwrap() {
         if person.is_ok() {
