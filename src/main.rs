@@ -1,7 +1,7 @@
 extern crate skim;
 use chrono::NaiveDateTime;
 use enum_map::{enum_map, Enum};
-use rusqlite::{Connection, Result, OpenFlags};
+use rusqlite::{Connection, OpenFlags, Result};
 use skim::prelude::*;
 use std::env;
 use std::thread;
@@ -27,12 +27,33 @@ struct History {
     session: i64,
     host: String,
     dir: String,
-    searchrange: [(usize, usize);1],
+    searchrange: [(usize, usize); 1],
 }
 impl History {
-    fn new( id: i64, cmd: String, start: u64, exit_status: Option<i64>, duration: Option<i64>, count: i64, session: i64, host: String, dir: String) -> History{
+    fn new(
+        id: i64,
+        cmd: String,
+        start: u64,
+        exit_status: Option<i64>,
+        duration: Option<i64>,
+        count: i64,
+        session: i64,
+        host: String,
+        dir: String,
+    ) -> History {
         let myvec = [(11 as usize, cmd.len() + (11 as usize))];
-        return History{id, cmd, start, exit_status, duration, count, session, host, dir, searchrange:myvec};
+        return History {
+            id,
+            cmd,
+            start,
+            exit_status,
+            duration,
+            count,
+            session,
+            host,
+            dir,
+            searchrange: myvec,
+        };
     }
 }
 
@@ -72,7 +93,6 @@ impl History {
 }
 
 impl SkimItem for History {
-
     fn text(&self) -> Cow<str> {
         let information = format!("{:10} {}", self.format_date(false), self.cmd);
         Cow::Owned(information)
@@ -98,7 +118,7 @@ impl SkimItem for History {
         ));
         ItemPreview::AnsiText(information)
     }
-     fn get_matching_ranges(&self) -> Option<&[(usize, usize)]> {
+    fn get_matching_ranges(&self) -> Option<&[(usize, usize)]> {
         Some(&self.searchrange)
     }
 }
@@ -147,7 +167,8 @@ fn get_current_host() -> String {
 }
 
 fn prepare_entries(location: &Location, grouped: bool, tx_item: SkimItemSender) {
-    let conn_res = Connection::open_with_flags(get_histdb_database(), OpenFlags::SQLITE_OPEN_READ_ONLY);
+    let conn_res =
+        Connection::open_with_flags(get_histdb_database(), OpenFlags::SQLITE_OPEN_READ_ONLY);
     if conn_res.is_err() {
         return;
     }
@@ -253,7 +274,7 @@ fn show_history(thequery: String) -> Result<String> {
                 "f5:abort",
                 "ctrl-r:abort",
                 "ctrl-u:half-page-up",
-                "ctrl-d:half-page-down"
+                "ctrl-d:half-page-down",
             ])
             .header(Some(&title))
             .preview(Some("")) // preview should be specified to enable preview window
@@ -316,7 +337,8 @@ fn show_history(thequery: String) -> Result<String> {
 }
 
 fn main() -> Result<()> {
-    let _conn = Connection::open_with_flags(get_histdb_database(), OpenFlags::SQLITE_OPEN_READ_ONLY);
+    let _conn =
+        Connection::open_with_flags(get_histdb_database(), OpenFlags::SQLITE_OPEN_READ_ONLY);
 
     let args: Vec<String> = env::args().collect();
     let query = |args: Vec<String>| -> String {
