@@ -348,6 +348,11 @@ fn main() -> Result<()> {
         return "".to_string();
     }(args);
 
+    if query == "--version"{
+        println!("v0.7.0");
+        std::process::exit(1);
+    }
+
     let result = show_history(query);
     if result.is_ok() {
         println!("{}", result.ok().unwrap());
