@@ -22,10 +22,12 @@ Well, it accesses the [zsh histdb](https://github.com/larkery/zsh-histdb). It le
 Install the plugin, e.g. using [zplug](https://github.com/zplug/zplug).
 
 ```
-  zplug 'm42e/zsh-histdb-skim', from:github, use:zsh-histdb-skim.zsh, at:main
+  zplug 'm42e/zsh-histdb-skim', from:github, at:main
 ```
 
-It downloads the binary (if available) automatically. You can do manually by calling `histdb-skim-download`.
+It downloads the binary (if available) automatically. You can do manually by calling `histdb-skim-download`. It will be saved in `${XDG_DATA_HOME}/zsh-histdb-skim`, alternatively `${HOME}/.local/share/zsh-histdb-skim`. You can specify the directory manually by setting `HISTDB_SKIM_PATH`.
+
+The download will happen if the executable is not there or the version is outdated (starting from v0.7.0). These checks happen when sourcing the script.
 
 
 The plugin calls `bindkey` but some other plugins may overwrite. In this case you would have to do it yourself:
@@ -33,6 +35,11 @@ The plugin calls `bindkey` but some other plugins may overwrite. In this case yo
 ```
 bindkey '^R' histdb-skim-widget
 ```
+
+
+## Additional information
+
+By default the binary is downloaded
 
 
 ## Building
