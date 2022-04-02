@@ -2,6 +2,8 @@ XDG_BIN_PATH=${XDG_DATA_HOME:-$HOME/.local/share}/zsh-histdb-skim/
 BIN_DIR=${HISTDB_SKIM_PATH:-${XDG_BIN_PATH}}
 BIN_PATH=${BIN_DIR}/zsh-histdb-skim
 
+HISTB_SKIM_VERSION="v0.7.1"
+
 histdb-skim-get-os(){
   UNAME_STR=`uname -a`
   if [[ ( $UNAME_STR =~ '.*Darwin.*' ) && ( $UNAME_STR =~ '.*x86_64.*') ]]; then
@@ -23,13 +25,13 @@ histdb-skim-download(){
   else
     echo "Downloading binary"
     mkdir -p ${BIN_DIR}
-    curl -s -JL https://github.com/m42e/zsh-histdb-skim/releases/download/$(histdb-skim-get-latest-version)/zsh-histdb-skim-$(histdb-skim-get-os) -o ${BIN_PATH}
+    curl -s -JL https://github.com/m42e/zsh-histdb-skim/releases/download/${HISTB_SKIM_VERSION}/zsh-histdb-skim-$(histdb-skim-get-os) -o ${BIN_PATH}
     chmod +x ${BIN_PATH}
   fi
 }
 
 histdb-skim-ensure () {
-  if [[ ! -f ${BIN_PATH} || $(${BIN_PATH} --version) != "v0.7.1" ]]; then
+  if [[ ! -f ${BIN_PATH} || $(${BIN_PATH} --version) != ${HISTB_SKIM_VERSION} ]]; then
     histdb-skim-download
   fi
 }
