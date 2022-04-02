@@ -1,4 +1,3 @@
-THIS_PATH=${0:a:h}
 XDG_BIN_PATH=${XDG_DATA_HOME:-$HOME/.local/share}/zsh-histdb-skim/
 BIN_DIR=${HISTDB_SKIM_PATH:-${XDG_BIN_PATH}}
 BIN_PATH=${BIN_DIR}/zsh-histdb-skim
@@ -29,18 +28,13 @@ histdb-skim-download(){
   fi
 }
 
-
 histdb-skim-ensure () {
-  if [[ ! -f ${BIN_PATH} ]]; then
-    histdb-skim-download
-  fi
-  if [[ ${BIN_PATH} != "v0.7.0" ]]; then
+  if [[ ! -f ${BIN_PATH} || $(${BIN_PATH} --version) != "v0.7.0" ]]; then
     histdb-skim-download
   fi
 }
 
 histdb-skim-widget() {
-  histdb-skim-ensure
   origquery=${BUFFER}
   output=$( \
     HISTDB_HOST=${HISTDB_HOST:-"'$(sql_escape ${HOST})'"} \
@@ -58,6 +52,8 @@ histdb-skim-widget() {
   CURSOR=$#BUFFER
   zle redisplay
 }
+
+histdb-skim-ensure
 
 zle     -N   histdb-skim-widget
 bindkey '^R' histdb-skim-widget
