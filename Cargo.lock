@@ -1174,6 +1174,7 @@ dependencies = [
  "chrono",
  "enum-map",
  "log",
+ "regex",
  "rusqlite",
  "skim",
  "textwrap 0.15.0",

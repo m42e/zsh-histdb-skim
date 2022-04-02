@@ -13,3 +13,6 @@ chrono = "0.4.19"
 enum-map = "2.1.0"
 log = "0.4"
 textwrap = "0.15"
+
+[dev-dependencies]
+regex = "*"
