@@ -252,6 +252,8 @@ fn show_history(thequery: String) -> Result<String> {
                 "f4:abort",
                 "f5:abort",
                 "ctrl-r:abort",
+                "ctrl-u:half-page-up",
+                "ctrl-d:half-page-down"
             ])
             .header(Some(&title))
             .preview(Some("")) // preview should be specified to enable preview window
