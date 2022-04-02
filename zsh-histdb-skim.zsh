@@ -29,7 +29,7 @@ histdb-skim-download(){
 }
 
 histdb-skim-ensure () {
-  if [[ ! -f ${BIN_PATH} || $(${BIN_PATH} --version) != "v0.7.0" ]]; then
+  if [[ ! -f ${BIN_PATH} || $(${BIN_PATH} --version) != "v0.7.1" ]]; then
     histdb-skim-download
   fi
 }
