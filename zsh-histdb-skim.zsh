@@ -2,7 +2,7 @@ XDG_BIN_PATH=${XDG_DATA_HOME:-$HOME/.local/share}/zsh-histdb-skim/
 BIN_DIR=${HISTDB_SKIM_PATH:-${XDG_BIN_PATH}}
 BIN_PATH=${BIN_DIR}/zsh-histdb-skim
 
-HISTB_SKIM_VERSION="v0.7.3"
+HISTB_SKIM_VERSION="v0.7.5"
 
 histdb-skim-get-os(){
   UNAME_STR=`uname -a`
