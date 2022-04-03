@@ -28,6 +28,9 @@ fn read_entries(location: &Location, grouped: bool, tx_item: SkimItemSender) {
     let s = build_query_string(&location, grouped);
 
     let stmt_result = conn.prepare(&s);
+    if stmt_result.is_err() {
+        return;
+    }
     let mut stmt = stmt_result.unwrap();
 
     let cats = stmt.query_map([], |row| {
