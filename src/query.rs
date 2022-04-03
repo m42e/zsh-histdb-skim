@@ -2,19 +2,19 @@ use crate::location::Location;
 use crate::environment::*;
 
 pub fn build_query_string(theloc: &Location, grouped: bool) -> String {
-    let mut query = String::from("select history.id, commands.argv,");
+    let mut query = String::from("select history.id as id, commands.argv as cmd,");
     if !grouped {
         query.push_str(" start_time")
     } else {
         query.push_str(" max(start_time)")
     }
-    query.push_str(" as max_start, exit_status, duration,");
+    query.push_str(" as start, exit_status, duration,");
     if !grouped {
         query.push_str(" 1")
     } else {
         query.push_str(" count()")
     }
-    query.push_str(" as count, history.session, places.host, places.dir");
+    query.push_str(" as count, history.session as session, places.host as host, places.dir as dir");
     query.push_str(" from history");
     query.push_str(" left join commands on history.command_id = commands.id");
     query.push_str(" left join places on history.place_id = places.id");
@@ -44,7 +44,7 @@ pub fn build_query_string(theloc: &Location, grouped: bool) -> String {
     if grouped {
         query.push_str(" group by history.command_id, history.place_id");
     }
-    query.push_str(" order by max_start desc");
+    query.push_str(" order by start desc");
     return query;
 }
 
@@ -64,7 +64,7 @@ mod query {
             let query = build_query_string(&l, true);
             assert!(query.contains("history.id,"));
             assert!(query.contains("exit_status,"));
-            assert!(query.contains("max_start,"));
+            assert!(query.contains("start,"));
             assert!(query.contains("duration,"));
             assert!(query.contains("count,"));
             assert!(query.contains("history.session,"));

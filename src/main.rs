@@ -29,23 +29,25 @@ fn read_entries(location: &Location, grouped: bool, tx_item: SkimItemSender) {
 
     let stmt_result = conn.prepare(&s);
     if stmt_result.is_err() {
+        let _ = tx_item.send(Arc::new(format!("Cannot get result from database {}", stmt_result.err().unwrap())));
+        drop(tx_item);
         return;
     }
     let mut stmt = stmt_result.unwrap();
 
     let cats = stmt.query_map([], |row| {
-        let cmd: String = row.get(1)?;
+        let cmd: String = row.get("cmd")?;
         let commandend = cmd.len() as usize;
         Ok(History {
-            id: row.get(0)?,
+            id: row.get("id")?,
             cmd: cmd,
-            start: row.get(2)?,
-            exit_status: row.get(3)?,
-            duration: row.get(4)?,
-            count: row.get(5)?,
-            session: row.get(6)?,
-            host: row.get(7)?,
-            dir: row.get(8)?,
+            start: row.get("start")?,
+            exit_status: row.get("exit_status")?,
+            duration: row.get("duration")?,
+            count: row.get("count")?,
+            session: row.get("session")?,
+            host: row.get("host")?,
+            dir: row.get("dir")?,
             searchrange: [(
                 History::COMMAND_START,
                 commandend + (History::COMMAND_START),
