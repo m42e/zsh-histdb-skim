@@ -62,12 +62,12 @@ mod query {
             Location::Everywhere,
         ] {
             let query = build_query_string(&l, true);
-            assert!(query.contains("history.id,"));
-            assert!(query.contains("exit_status,"));
-            assert!(query.contains("start,"));
-            assert!(query.contains("duration,"));
-            assert!(query.contains("count,"));
-            assert!(query.contains("history.session,"));
+            assert!(query.contains("history.id as id"));
+            assert!(query.contains("exit_status"));
+            assert!(query.contains("start"));
+            assert!(query.contains("duration"));
+            assert!(query.contains("count"));
+            assert!(query.contains("history.session as session"));
             assert!(query.contains("places.dir"));
         }
     }
