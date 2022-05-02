@@ -102,7 +102,7 @@ fn show_history(thequery: String) -> Result<String, String> {
             ])
             .header(Some(&title))
             .preview(Some("")) // preview should be specified to enable preview window
-            .nosort(true)
+            .nosort(get_nosort_option())
             .build()
             .unwrap();
 
