@@ -9,6 +9,9 @@ histdb-skim-get-os(){
   if [[ ( $UNAME_STR =~ '.*Darwin.*' ) && ( $UNAME_STR =~ '.*x86_64.*') ]]; then
     echo -n "darwin-x64"
   fi
+  if [[ ( $UNAME_STR =~ '.*Darwin.*' ) && ( $UNAME_STR =~ '.*arm64.*') ]]; then
+    echo -n "darwin-x64"
+  fi
   if [[ ( $UNAME_STR =~ '.*Linux.*' ) && ( $UNAME_STR =~ '.*x86_64.*') ]]; then
     echo -n "linux-x64"
   fi
