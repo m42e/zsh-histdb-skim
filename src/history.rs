@@ -1,6 +1,6 @@
 extern crate skim;
 use crate::environment::*;
-use chrono::NaiveDateTime;
+use chrono::{NaiveDateTime, DateTime, Local, TimeZone};
 use skim::prelude::*;
 use std::time::SystemTime;
 use textwrap::fill;
@@ -43,7 +43,8 @@ impl History {
 
 impl History {
     fn format_date(&self, full: bool) -> String {
-        let starttime = NaiveDateTime::from_timestamp(self.start as i64, 0);
+        let naive = NaiveDateTime::from_timestamp(self.start as i64, 0);
+        let starttime: DateTime<Local> = Local.from_utc_datetime(&naive);
         if full {
             let mut dateinfo = String::from("");
             dateinfo.push_str(&get_date_format());
