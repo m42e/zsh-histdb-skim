@@ -4,6 +4,8 @@ use chrono::NaiveDateTime;
 use skim::prelude::*;
 use std::time::SystemTime;
 use textwrap::fill;
+use std::time::Duration;
+use humantime::format_duration;
 
 fn get_epoch_start_of_day() -> u64 {
     let now = SystemTime::now();
@@ -61,6 +63,15 @@ impl History {
             "\x1b[37;1m<NONE>\x1b[0m".to_string()
         }
     }
+
+    fn format_duration(&self) -> String {
+        if self.duration.is_some() {
+            let duration = Duration::from_secs(self.duration.unwrap() as u64);
+            format_duration(duration).to_string()
+        } else {
+            History::format_or_none(self.duration)
+        }
+    }
 }
 
 impl SkimItem for History {
@@ -76,7 +87,7 @@ impl SkimItem for History {
             information.push_str(&format!("\x1b[1m{:20}\x1b[0m{}\n", name, value));
         };
 
-        tformat("Runtime", &History::format_or_none(self.duration));
+        tformat("Runtime", &self.format_duration());
         tformat("Host", &self.host);
         tformat("Executed", &self.count.to_string());
         tformat("Directory", &self.dir);
