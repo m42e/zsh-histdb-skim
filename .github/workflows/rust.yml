@@ -25,7 +25,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
-    - name: Build
     - name: shogan/rust-static-build
       uses: Shogan/rust-musl-action@v1.0.2
       run: cargo build --verbose
