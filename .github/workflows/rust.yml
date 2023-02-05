@@ -20,11 +20,3 @@ jobs:
       run: cargo build --verbose
     - name: Run tests
       run: cargo test --verbose
-
-  build-osx:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v3
-    - name: shogan/rust-static-build
-      uses: Shogan/rust-musl-action@v1.0.2
-      run: cargo build --verbose
