@@ -29,7 +29,10 @@ fn read_entries(location: &Location, grouped: bool, tx_item: SkimItemSender) {
 
     let stmt_result = conn.prepare(&s);
     if stmt_result.is_err() {
-        let _ = tx_item.send(Arc::new(format!("Cannot get result from database {}", stmt_result.err().unwrap())));
+        let _ = tx_item.send(Arc::new(format!(
+            "Cannot get result from database {}",
+            stmt_result.err().unwrap()
+        )));
         drop(tx_item);
         return;
     }
@@ -67,7 +70,6 @@ struct SelectionResult {
     selected_cmd: Option<String>,
     abort: bool,
 }
-
 
 fn get_starting_location() -> Location {
     let mut location = Location::Session;

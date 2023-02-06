@@ -1,6 +1,6 @@
+use crate::environment::*;
 use crate::location::Location;
 use enum_map::enum_map;
-use crate::environment::*;
 
 pub fn generate_title(location: &Location) -> String {
     let extra_info = |theloc: &Location| -> String {

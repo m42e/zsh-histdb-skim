@@ -1,11 +1,11 @@
 extern crate skim;
 use crate::environment::*;
-use chrono::{NaiveDateTime, DateTime, Local, TimeZone};
+use chrono::{DateTime, Local, NaiveDateTime, TimeZone};
+use humantime::format_duration;
 use skim::prelude::*;
+use std::time::Duration;
 use std::time::SystemTime;
 use textwrap::fill;
-use std::time::Duration;
-use humantime::format_duration;
 
 fn get_epoch_start_of_day() -> u64 {
     let now = SystemTime::now();
