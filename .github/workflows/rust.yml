@@ -50,7 +50,7 @@ jobs:
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           file: target/release/zsh-histdb-skim
-          asset_name: zsh-histdb-skim.linux
+          asset_name: zsh-histdb-skim-linux-x64
           tag: build-${{ github.ref }}
           overwrite: true
 
@@ -83,5 +83,5 @@ jobs:
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           file: target/release/zsh-histdb-skim
-          asset_name: zsh-histdb-skim.macos
+          asset_name: zsh-histdb-skim-darwin-x64
           tag: build-${{ github.ref }}
