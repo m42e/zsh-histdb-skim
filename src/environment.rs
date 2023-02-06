@@ -46,7 +46,7 @@ pub fn get_current_host() -> String {
 pub fn get_nosort_option() -> bool {
     let nosort = env::var("HISTDB_NOSORT").unwrap_or(String::from("false"));
     if nosort.to_lowercase() == "true" || nosort == "1" {
-        return true
+        return true;
     }
-    return false
+    return false;
 }
