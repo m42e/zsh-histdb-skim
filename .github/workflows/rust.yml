@@ -2,11 +2,8 @@ name: Rust
 
 on:
   push:
-    branches: [ "main" ]
     tags:
       - v**
-  pull_request:
-    branches: [ "main" ]
 
 env:
   CARGO_TERM_COLOR: always
@@ -53,7 +50,7 @@ jobs:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           file: target/release/zsh-histdb-skim
           asset_name: zsh-histdb-skim-linux-x64
-          tag: build-${{ github.ref }}
+          tag: ${{ github.ref }}
           overwrite: true
 
   build-mac:
@@ -86,4 +83,4 @@ jobs:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           file: target/release/zsh-histdb-skim
           asset_name: zsh-histdb-skim-darwin-x64
-          tag: build-${{ github.ref }}
+          tag: ${{ github.ref }}
