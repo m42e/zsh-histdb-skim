@@ -43,7 +43,7 @@ impl History {
 
 impl History {
     fn format_date(&self, full: bool) -> String {
-        let naive = NaiveDateTime::from_timestamp(self.start as i64, 0);
+        let naive = NaiveDateTime::from_timestamp_opt(self.start as i64, 0).unwrap_or_default();
         let starttime: DateTime<Local> = Local.from_utc_datetime(&naive);
         if full {
             let mut dateinfo = String::from("");
