@@ -203,7 +203,7 @@ fn main() -> Result<()> {
     }(args);
 
     if query == "--version" {
-        println!("v0.8.5");
+        println!("v0.8.6");
         std::process::exit(1);
     }
 
