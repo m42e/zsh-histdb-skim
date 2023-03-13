@@ -50,5 +50,5 @@ local Pipeline(name, version) = {
 };
 
 [
-  Pipeline("rust-1-59", "1.59"),
+  Pipeline("rust-1-68", "1.68"),
 ]
