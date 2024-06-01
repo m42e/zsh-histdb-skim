@@ -43,10 +43,17 @@ pub fn get_current_host() -> String {
     return host.to_string();
 }
 
+/// Disable sorting so history would be kept in historical order
 pub fn get_nosort_option() -> bool {
     let nosort = env::var("HISTDB_NOSORT").unwrap_or(String::from("false"));
     if nosort.to_lowercase() == "true" || nosort == "1" {
         return true;
     }
     return false;
+}
+
+/// Configure preview window option [POSITION][:SIZE[%]][:wrap][:hidden][:+SCROLL[-OFFSET]]
+pub fn get_preview_window_option() -> String {
+    let window = env::var("HISTDB_PREVIEW").unwrap_or(String::from("right:50%:true:false"));
+    return window.to_string();
 }

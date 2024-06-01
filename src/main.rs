@@ -85,6 +85,7 @@ fn show_history(thequery: String) -> Result<String, String> {
     let mut query = thequery;
     loop {
         let title = generate_title(&location);
+        let window_option = get_preview_window_option();
 
         let options = SkimOptionsBuilder::default()
             .height(Some("100%"))
@@ -104,6 +105,7 @@ fn show_history(thequery: String) -> Result<String, String> {
             ])
             .header(Some(&title))
             .preview(Some("")) // preview should be specified to enable preview window
+            .preview_window(Some(&window_option)) // preview should be specified to enable preview window
             .nosort(get_nosort_option())
             .build()
             .unwrap();
