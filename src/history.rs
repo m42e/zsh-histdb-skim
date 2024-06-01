@@ -39,6 +39,12 @@ impl History {
     pub fn command(&self) -> &String {
         return &self.cmd;
     }
+    pub fn session(&self) -> String {
+        return self.session.to_string();
+    }
+    pub fn dir(&self) -> String {
+        return self.dir.to_string();
+    }
 }
 
 impl History {

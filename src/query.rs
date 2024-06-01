@@ -1,5 +1,8 @@
 use crate::environment::*;
 use crate::location::Location;
+use crate::focus::get_focus_session;
+use crate::focus::get_focus_dir;
+
 
 pub fn build_query_string(theloc: &Location, grouped: bool) -> String {
     let mut query = String::from("select history.id as id, commands.argv as cmd,");
@@ -26,11 +29,27 @@ pub fn build_query_string(theloc: &Location, grouped: bool) -> String {
     };
     match theloc {
         Location::Session => {
-            query.push_str(&format!(" session == {} and", &get_current_session_id()));
+            let session = get_focus_session().unwrap_or(get_current_session_id());
+            query.push_str(&format!(" session == {} and", session));
         }
 
         Location::Directory => {
-            query.push_str(&format!(" places.dir like '{}' and", &get_current_dir()));
+            let session = get_focus_dir().unwrap_or(get_current_dir());
+            query.push_str(&format!(" places.dir like '{}' and", session));
+        }
+
+        _ => {}
+    };
+    match theloc {
+        Location::Machine | Location::Everywhere => {
+            let session = get_focus_session();
+            let dir = get_focus_dir();
+            if dir.is_some() {
+                query.push_str(&format!(" places.dir like '{}' and", dir.unwrap()));
+            }
+            if session.is_some() {
+            query.push_str(&format!(" session == {} and", session.unwrap()));
+            }
         }
 
         _ => {}

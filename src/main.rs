@@ -1,11 +1,18 @@
 extern crate skim;
 mod environment;
+mod focus;
 mod history;
 mod location;
 mod query;
 mod title;
 
 use crate::environment::*;
+use crate::focus::focus_dir;
+use crate::focus::focus_session;
+use crate::focus::get_focus_dir;
+use crate::focus::get_focus_session;
+use crate::focus::reset_focus_dir;
+use crate::focus::reset_focus_session;
 use crate::history::History;
 use crate::location::Location;
 use crate::query::build_query_string;
@@ -99,6 +106,8 @@ fn show_history(thequery: String) -> Result<String, String> {
                 "f3:abort",
                 "f4:abort",
                 "f5:abort",
+                "f6:abort",
+                "f7:abort",
                 "ctrl-r:abort",
                 "ctrl-u:half-page-up",
                 "ctrl-d:half-page-down",
@@ -170,6 +179,28 @@ fn process_result(
             Key::F(5) => {
                 *grouped = !*grouped;
             }
+            Key::F(6) => {
+                if get_focus_session().is_none() {
+                    focus_session(
+                        &((*sel.selected_items[0]).as_any().downcast_ref::<History>())
+                            .unwrap()
+                            .session(),
+                    );
+                } else {
+                    reset_focus_session();
+                }
+            }
+            Key::F(7) => {
+                if get_focus_dir().is_none() {
+                    focus_dir(
+                        &((*sel.selected_items[0]).as_any().downcast_ref::<History>())
+                            .unwrap()
+                            .dir(),
+                    );
+                } else {
+                    reset_focus_dir();
+                }
+            }
             Key::Ctrl('r') => {
                 *loc = match *loc {
                     Location::Session => Location::Directory,
@@ -205,7 +236,7 @@ fn main() -> Result<()> {
     }(args);
 
     if query == "--version" {
-        println!("v0.8.7");
+        println!("v0.8.8");
         std::process::exit(1);
     }
 
