@@ -1,5 +1,5 @@
-use std::env;
 use crate::location::Location;
+use std::env;
 
 /// Get the default (which is non us! or the us date format)
 /// - [ ] Read from locale to determine default
@@ -61,7 +61,9 @@ pub fn get_preview_window_option() -> String {
 
 /// Configure preview window option [POSITION][:SIZE[%]][:wrap][:hidden][:+SCROLL[-OFFSET]]
 pub fn get_default_tab() -> Location {
-    let default_tab = env::var("HISTDB_DEFAULT_TAB").unwrap_or(String::from("Session")).to_lowercase();
+    let default_tab = env::var("HISTDB_DEFAULT_TAB")
+        .unwrap_or(String::from("Session"))
+        .to_lowercase();
     match default_tab.as_str() {
         "directory" => Location::Directory,
         "machine" => Location::Machine,
