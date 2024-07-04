@@ -2,7 +2,7 @@ XDG_BIN_PATH=${XDG_DATA_HOME:-$HOME/.local/share}/zsh-histdb-skim/
 BIN_DIR=${HISTDB_SKIM_PATH:-${XDG_BIN_PATH}}
 BIN_PATH=${BIN_DIR}/zsh-histdb-skim
 
-HISTB_SKIM_VERSION="v0.8.8"
+HISTB_SKIM_VERSION="v0.9.0"
 
 histdb-skim-get-os(){
   UNAME_STR=`uname -a`
@@ -10,7 +10,7 @@ histdb-skim-get-os(){
     echo -n "darwin-x64"
   fi
   if [[ ( $UNAME_STR =~ '.*Darwin.*' ) && ( $UNAME_STR =~ '.*arm64.*') ]]; then
-    echo -n "darwin-x64"
+    echo -n "darwin-arm"
   fi
   if [[ ( $UNAME_STR =~ '.*Linux.*' ) && ( $UNAME_STR =~ '.*x86_64.*') ]]; then
     echo -n "linux-x64"
