@@ -79,7 +79,7 @@ struct SelectionResult {
 }
 
 fn get_starting_location() -> Location {
-    let mut location = Location::Session;
+    let mut location = get_default_tab();
     if get_current_session_id() == "" {
         location = Location::Directory;
     }
@@ -236,7 +236,7 @@ fn main() -> Result<()> {
     }(args);
 
     if query == "--version" {
-        println!("v0.8.8");
+        println!("v0.9.0");
         std::process::exit(1);
     }
 

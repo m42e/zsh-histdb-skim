@@ -50,6 +50,16 @@ mkdir -p bin
 mv target/release/zsh-histdb-skim bin
 ```
 
+## Environment Variables
+
+- **HISTDB_FZF_FORCE_DATE_FORMAT**: You can force us or non-us time format.
+- **HISTDB_FILE**: SQLite file, having all the commands. (is set by zsh-histdb)
+- **HISTDB_SESSION**: The current session id (is set by zsh-histdb)
+- **HISTDB_HOST**: The current hostname (is set by zsh-histdb)
+- **HISTDB_NOSORT**: Do not sort within skim. If set, the order of the commands is kept
+- **HISTDB_PREVIEW**: This defines the format/position of the preview window. `[POSITION][:SIZE[%]][:wrap][:hidden][:+SCROLL[-OFFSET]]`
+- **HISTDB_DEFAULT_TAB**: Set the default tab. Directory|Machine or Host|Everything or *|Session (any non matching value will be treated as Session)
+
 # TODO
 - improve rust code
 
