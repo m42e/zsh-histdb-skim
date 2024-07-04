@@ -84,6 +84,7 @@ jobs:
           file: target/x86_64-apple-darwin/release/zsh-histdb-skim
           asset_name: zsh-histdb-skim-darwin-x64
           tag: ${{ github.ref }}
+          overwrite: true
 
   build-mac-arm:
     runs-on: macos-latest
@@ -116,3 +117,5 @@ jobs:
           file: target/release/zsh-histdb-skim
           asset_name: zsh-histdb-skim-darwin-aarch64
           tag: ${{ github.ref }}
+          overwrite: true
+
