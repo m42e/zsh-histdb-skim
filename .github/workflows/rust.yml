@@ -17,7 +17,10 @@ jobs:
       - run: cargo fmt -- --check
 
   build:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-18.04, ubuntu-20.04, ubuntu-22.04, ubuntu-24.04]
 
     steps:
       - name: Checkout
@@ -40,7 +43,21 @@ jobs:
         run: |
           sudo apt-get update \
           && sudo apt-get install -y \
-          libdbus-1-dev
+          libdbus-1-dev libsqlite3-dev libssl-dev pkg-config
+      - name: Install dependencies
+        if: matrix.os == 'ubuntu-20.04'
+        run: |
+          sudo apt-get update \
+          && sudo apt-get install -y \
+          libdbus-1-dev libsqlite3-dev libssl-dev pkg-config libc6
+
+      - name: Install dependencies
+        if: matrix.os != 'ubuntu-20.04'
+        run: |
+          sudo apt-get update \
+          && sudo apt-get install -y \
+          libdbus-1-dev libsqlite3-dev libssl-dev pkg-config
+
       - name: Build
         run: cargo build --all --release && strip target/release/zsh-histdb-skim target/release/zsh-histdb-skim
 
@@ -49,7 +66,7 @@ jobs:
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           file: target/release/zsh-histdb-skim
-          asset_name: zsh-histdb-skim-linux-x64
+          asset_name: zsh-histdb-skim-linux-x64-${{ matrix.os }}
           tag: ${{ github.ref }}
           overwrite: true
 
