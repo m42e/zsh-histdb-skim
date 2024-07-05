@@ -17,10 +17,7 @@ jobs:
       - run: cargo fmt -- --check
 
   build:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-18.04, ubuntu-20.04, ubuntu-22.04, ubuntu-24.04]
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout
@@ -39,34 +36,23 @@ jobs:
           toolchain: beta
           default: true
           override: true
+      - name: Target
+        run: rustup target add x86_64-unknown-linux-musl
+
       - name: Install system dependencies
         run: |
           sudo apt-get update \
           && sudo apt-get install -y \
-          libdbus-1-dev libsqlite3-dev libssl-dev pkg-config
-      - name: Install dependencies
-        if: matrix.os == 'ubuntu-20.04'
-        run: |
-          sudo apt-get update \
-          && sudo apt-get install -y \
-          libdbus-1-dev libsqlite3-dev libssl-dev pkg-config libc6
-
-      - name: Install dependencies
-        if: matrix.os != 'ubuntu-20.04'
-        run: |
-          sudo apt-get update \
-          && sudo apt-get install -y \
-          libdbus-1-dev libsqlite3-dev libssl-dev pkg-config
-
+          libdbus-1-dev
       - name: Build
-        run: cargo build --all --release && strip target/release/zsh-histdb-skim target/release/zsh-histdb-skim
+        run: cargo build --all --release --target x86_64-unknown-linux-musl && strip target/x86_64-unknown-linux-musl/release/zsh-histdb-skim
 
       - name: Upload binaries to release
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: target/release/zsh-histdb-skim
-          asset_name: zsh-histdb-skim-linux-x64-${{ matrix.os }}
+          file: target/x86_64-unknown-linux-musl/release/zsh-histdb-skim
+          asset_name: zsh-histdb-skim-linux-x64
           tag: ${{ github.ref }}
           overwrite: true
 
