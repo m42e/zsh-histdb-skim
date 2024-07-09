@@ -35,7 +35,13 @@ histdb-skim-download(){
 
 histdb-skim-ensure () {
   if [[ ! -f ${BIN_PATH} || $(${BIN_PATH} --version) != ${HISTB_SKIM_VERSION} ]]; then
-    histdb-skim-download
+    if command -v cargo &> /dev/null; then
+      echo "cargo is available, starting Rust release build"
+      cargo build --release --manifest-path "$(dirname "$0")/Cargo.toml"
+      cp "$(dirname "$0")/target/release/zsh-histdb-skim" ${BIN_PATH}
+    else
+      histdb-skim-download
+    fi
   fi
 }
 
