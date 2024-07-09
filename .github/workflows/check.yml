@@ -1,9 +1,9 @@
 name: Rust Release
 
 on:
-  push:
-    tags:
-      - v**
+  pull_request:
+    branches:
+      - '**'
 
 env:
   CARGO_TERM_COLOR: always
@@ -47,15 +47,6 @@ jobs:
       - name: Build
         run: cargo build --all --release --target x86_64-unknown-linux-musl && strip target/x86_64-unknown-linux-musl/release/zsh-histdb-skim
 
-      - name: Upload binaries to release
-        uses: svenstaro/upload-release-action@v2
-        with:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: target/x86_64-unknown-linux-musl/release/zsh-histdb-skim
-          asset_name: zsh-histdb-skim-linux-x64
-          tag: ${{ github.ref }}
-          overwrite: true
-
   build-mac-intel:
     runs-on: macos-latest
 
@@ -80,15 +71,6 @@ jobs:
       - name: Build for mac
         run: cargo build --all --release --target x86_64-apple-darwin && strip target/x86_64-apple-darwin/release/zsh-histdb-skim
 
-      - name: Upload binaries to release
-        uses: svenstaro/upload-release-action@v2
-        with:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: target/x86_64-apple-darwin/release/zsh-histdb-skim
-          asset_name: zsh-histdb-skim-darwin-x64
-          tag: ${{ github.ref }}
-          overwrite: true
-
   build-mac-arm:
     runs-on: macos-latest
 
@@ -112,13 +94,4 @@ jobs:
 
       - name: Build for mac
         run: cargo build --all --release && strip target/release/zsh-histdb-skim
-
-      - name: Upload binaries to release
-        uses: svenstaro/upload-release-action@v2
-        with:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: target/release/zsh-histdb-skim
-          asset_name: zsh-histdb-skim-darwin-aarch64
-          tag: ${{ github.ref }}
-          overwrite: true
 
