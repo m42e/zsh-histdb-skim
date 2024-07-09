@@ -80,7 +80,7 @@ struct SelectionResult {
 
 fn get_starting_location() -> Location {
     let mut location = get_default_tab();
-    if get_current_session_id() == "" {
+    if location == Location::Session && get_current_session_id() == "" {
         location = Location::Directory;
     }
     location
