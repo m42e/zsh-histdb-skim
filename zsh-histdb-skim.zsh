@@ -2,7 +2,7 @@ XDG_BIN_PATH=${XDG_DATA_HOME:-$HOME/.local/share}/zsh-histdb-skim/
 BIN_DIR=${HISTDB_SKIM_PATH:-${XDG_BIN_PATH}}
 BIN_PATH=${BIN_DIR}/zsh-histdb-skim
 
-HISTB_SKIM_VERSION="v0.9.3"
+HISTB_SKIM_VERSION="v0.9.4"
 
 histdb-skim-get-os(){
   UNAME_STR=`uname -a`
@@ -35,7 +35,15 @@ histdb-skim-download(){
 
 histdb-skim-ensure () {
   if [[ ! -f ${BIN_PATH} || $(${BIN_PATH} --version) != ${HISTB_SKIM_VERSION} ]]; then
-    histdb-skim-download
+    if command -v cargo &> /dev/null; then
+      echo "cargo is available, starting Rust release build"
+      SCRIPT_DIR=$(cd "$(dirname "$0:A")" && pwd)
+      (cd ${SCRIPT_DIR};\
+      cargo build --release --manifest-path "${SCRIPT_DIR}/Cargo.toml" && \
+      cp "${SCRIPT_DIR}/target/release/zsh-histdb-skim" ${BIN_PATH})
+    else
+      histdb-skim-download
+    fi
   fi
 }
 
