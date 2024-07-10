@@ -1,6 +1,6 @@
 extern crate skim;
 use crate::environment::*;
-use chrono::{DateTime, Local, NaiveDateTime, TimeZone};
+use chrono::{DateTime, Local, TimeZone};
 use humantime::format_duration;
 use skim::prelude::*;
 use std::time::Duration;
@@ -18,7 +18,6 @@ fn get_epoch_start_of_day() -> u64 {
     now_secs - seconds_since_midnight
 }
 
-#[derive(Debug)]
 pub struct History {
     pub id: i64,
     pub cmd: String,
@@ -49,8 +48,7 @@ impl History {
 
 impl History {
     fn format_date(&self, full: bool) -> String {
-        let naive = NaiveDateTime::from_timestamp_opt(self.start as i64, 0).unwrap_or_default();
-        let starttime: DateTime<Local> = Local.from_utc_datetime(&naive);
+        let starttime: DateTime<Local> = Local.timestamp_opt(self.start as i64, 0).unwrap();
         if full {
             let mut dateinfo = String::from("");
             dateinfo.push_str(&get_date_format());
