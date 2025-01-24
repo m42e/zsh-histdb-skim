@@ -93,6 +93,7 @@ fn show_history(thequery: String) -> Result<String, String> {
     loop {
         let title = generate_title(&location);
         let window_option = get_preview_window_option();
+        let color_options = get_color();
 
         let options = SkimOptionsBuilder::default()
             .height(Some("100%"))
@@ -100,6 +101,7 @@ fn show_history(thequery: String) -> Result<String, String> {
             .reverse(true)
             .prompt(Some("history >>"))
             .query(Some(&query))
+            .color(Some(&color_options))
             .bind(vec![
                 "f1:abort",
                 "f2:abort",
