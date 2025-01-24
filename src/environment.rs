@@ -73,3 +73,8 @@ pub fn get_default_tab() -> Location {
         _ => Location::Session,
     }
 }
+
+pub fn get_color() -> String {
+    let color = env::var("HISTDB_COLOR").unwrap_or(String::from("auto"));
+    return color.to_string();
+}

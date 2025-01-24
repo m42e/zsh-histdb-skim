@@ -1029,7 +1029,7 @@ dependencies = [
 
 [[package]]
 name = "zsh-histdb-skim"
-version = "0.9.4"
+version = "0.9.6"
 dependencies = [
  "chrono",
  "enum-map",
