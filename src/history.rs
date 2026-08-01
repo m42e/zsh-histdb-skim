@@ -1,21 +1,19 @@
 extern crate skim;
 use crate::environment::*;
-use chrono::{DateTime, Local, TimeZone};
+use chrono::{DateTime, Datelike, Local, TimeZone};
 use humantime::format_duration;
 use skim::prelude::*;
 use std::time::Duration;
-use std::time::SystemTime;
 use textwrap::fill;
 
 fn get_epoch_start_of_day() -> u64 {
-    let now = SystemTime::now();
-    let now_secs = now
-        .duration_since(SystemTime::UNIX_EPOCH)
-        .unwrap_or_default()
-        .as_secs();
-
-    let seconds_since_midnight = now_secs % (24 * 3600);
-    now_secs - seconds_since_midnight
+    let now = Local::now();
+    Local
+        .with_ymd_and_hms(now.year(), now.month(), now.day(), 0, 0, 0)
+        .earliest()
+        .unwrap_or(now)
+        .timestamp()
+        .max(0) as u64
 }
 
 pub struct History {
@@ -48,7 +46,10 @@ impl History {
 
 impl History {
     fn format_date(&self, full: bool) -> String {
-        let starttime: DateTime<Local> = Local.timestamp_opt(self.start as i64, 0).unwrap();
+        let starttime: DateTime<Local> = match Local.timestamp_opt(self.start as i64, 0).single() {
+            Some(starttime) => starttime,
+            None => return "<INVALID DATE>".to_string(),
+        };
         if full {
             let mut dateinfo = String::from("");
             dateinfo.push_str(&get_date_format());
@@ -62,19 +63,19 @@ impl History {
     }
 
     fn format_or_none(x: Option<i64>) -> String {
-        if x.is_some() {
-            format!("{}", x.unwrap())
-        } else {
-            "\x1b[37;1m<NONE>\x1b[0m".to_string()
-        }
+        x.map_or_else(
+            || "\x1b[37;1m<NONE>\x1b[0m".to_string(),
+            |value| value.to_string(),
+        )
     }
 
     fn format_duration(&self) -> String {
-        if self.duration.is_some() {
-            let duration = Duration::from_secs(self.duration.unwrap() as u64);
-            format_duration(duration).to_string()
-        } else {
-            History::format_or_none(self.duration)
+        match self.duration {
+            Some(seconds) if seconds >= 0 => {
+                format_duration(Duration::from_secs(seconds as u64)).to_string()
+            }
+            Some(_) => History::format_or_none(self.duration),
+            None => History::format_or_none(None),
         }
     }
 }
@@ -101,7 +102,7 @@ impl SkimItem for History {
         tformat("Start Time", &self.format_date(false));
         information.push_str(&format!(
             "\x1b[1mCommand\x1b[0m\n\n{}\n",
-            &fill(&self.cmd, _context.width)
+            &fill(&self.cmd, _context.width.max(1))
         ));
         ItemPreview::AnsiText(information)
     }

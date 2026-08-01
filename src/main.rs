@@ -15,42 +15,43 @@ use crate::focus::reset_focus_dir;
 use crate::focus::reset_focus_session;
 use crate::history::History;
 use crate::location::Location;
-use crate::query::build_query_string;
+use crate::query::build_query;
 use crate::title::generate_title;
 
-use rusqlite::{Connection, OpenFlags, Result};
+use rusqlite::{params_from_iter, Connection, OpenFlags, Result};
 use skim::prelude::*;
 use std::env;
 use std::thread;
 
 fn read_entries(location: &Location, grouped: bool, tx_item: SkimItemSender) {
-    let conn_res =
-        Connection::open_with_flags(get_histdb_database(), OpenFlags::SQLITE_OPEN_READ_ONLY);
-    if conn_res.is_err() {
-        let _ = tx_item.send(Arc::new("Cannot open database"));
-        drop(tx_item);
-        return;
-    }
-    let conn = conn_res.unwrap();
-    let s = build_query_string(&location, grouped);
+    let conn = match Connection::open_with_flags(
+        get_histdb_database(),
+        OpenFlags::SQLITE_OPEN_READ_ONLY,
+    ) {
+        Ok(conn) => conn,
+        Err(error) => {
+            let _ = tx_item.send(Arc::new(format!("Cannot open database: {}", error)));
+            return;
+        }
+    };
+    let query = build_query(location, grouped);
+    let mut stmt = match conn.prepare(&query.sql) {
+        Ok(stmt) => stmt,
+        Err(error) => {
+            let _ = tx_item.send(Arc::new(format!(
+                "Cannot get result from database: {}",
+                error
+            )));
+            return;
+        }
+    };
 
-    let stmt_result = conn.prepare(&s);
-    if stmt_result.is_err() {
-        let _ = tx_item.send(Arc::new(format!(
-            "Cannot get result from database {}",
-            stmt_result.err().unwrap()
-        )));
-        drop(tx_item);
-        return;
-    }
-    let mut stmt = stmt_result.unwrap();
-
-    let cats = stmt.query_map([], |row| {
+    let entries = match stmt.query_map(params_from_iter(query.params.iter()), |row| {
         let cmd: String = row.get("cmd")?;
-        let commandend = cmd.len() as usize;
+        let command_end = cmd.len();
         Ok(History {
             id: row.get("id")?,
-            cmd: cmd,
+            cmd,
             start: row.get("start")?,
             exit_status: row.get("exit_status")?,
             duration: row.get("duration")?,
@@ -58,19 +59,35 @@ fn read_entries(location: &Location, grouped: bool, tx_item: SkimItemSender) {
             session: row.get("session")?,
             host: row.get("host")?,
             dir: row.get("dir")?,
-            searchrange: [(
-                History::COMMAND_START,
-                commandend + (History::COMMAND_START),
-            )],
+            searchrange: [(History::COMMAND_START, command_end + History::COMMAND_START)],
         })
-    });
-    for person in cats.unwrap() {
-        if person.is_ok() {
-            let x = person.unwrap();
-            let _ = tx_item.send(Arc::new(x));
+    }) {
+        Ok(entries) => entries,
+        Err(error) => {
+            let _ = tx_item.send(Arc::new(format!(
+                "Cannot get result from database: {}",
+                error
+            )));
+            return;
+        }
+    };
+
+    for entry in entries {
+        match entry {
+            Ok(history) => {
+                if tx_item.send(Arc::new(history)).is_err() {
+                    break;
+                }
+            }
+            Err(error) => {
+                let _ = tx_item.send(Arc::new(format!(
+                    "Cannot read result from database: {}",
+                    error
+                )));
+                break;
+            }
         }
     }
-    drop(tx_item);
 }
 
 struct SelectionResult {
@@ -134,11 +151,19 @@ fn show_history(thequery: String) -> Result<String, String> {
         if selection_result.abort {
             return Err("Aborted".to_string());
         }
-        if selection_result.selected_cmd.is_some() {
-            return Ok(selection_result.selected_cmd.unwrap());
+        if let Some(selected_cmd) = selection_result.selected_cmd {
+            return Ok(selected_cmd);
         }
-        query = selected_items.unwrap().query;
+        query = selected_items.map_or_else(String::new, |selected| selected.query);
     }
+}
+
+fn selected_history(selected: &SkimOutput) -> Option<&History> {
+    selected
+        .selected_items
+        .first()?
+        .as_any()
+        .downcast_ref::<History>()
 }
 
 fn process_result(
@@ -146,8 +171,7 @@ fn process_result(
     loc: &mut Location,
     grouped: &mut bool,
 ) -> SelectionResult {
-    if selected_items.is_some() {
-        let sel = selected_items.as_ref().unwrap();
+    if let Some(sel) = selected_items.as_ref() {
         match sel.final_key {
             Key::ESC | Key::Ctrl('c') | Key::Ctrl('d') | Key::Ctrl('z') => {
                 return SelectionResult {
@@ -155,17 +179,20 @@ fn process_result(
                     abort: true,
                 };
             }
-            Key::Enter => {
-                return SelectionResult {
-                    selected_cmd: Some(format!(
-                        "{}",
-                        ((*sel.selected_items[0]).as_any().downcast_ref::<History>())
-                            .unwrap()
-                            .command()
-                    )),
-                    abort: false,
-                };
-            }
+            Key::Enter => match selected_history(sel) {
+                Some(history) => {
+                    return SelectionResult {
+                        selected_cmd: Some(history.command().to_string()),
+                        abort: false,
+                    };
+                }
+                None => {
+                    return SelectionResult {
+                        selected_cmd: None,
+                        abort: true,
+                    };
+                }
+            },
             Key::F(1) => {
                 *loc = Location::Session;
             }
@@ -182,25 +209,21 @@ fn process_result(
                 *grouped = !*grouped;
             }
             Key::F(6) => {
-                if get_focus_session().is_none() {
-                    focus_session(
-                        &((*sel.selected_items[0]).as_any().downcast_ref::<History>())
-                            .unwrap()
-                            .session(),
-                    );
-                } else {
-                    reset_focus_session();
+                if let Some(history) = selected_history(sel) {
+                    if get_focus_session().is_none() {
+                        focus_session(&history.session());
+                    } else {
+                        reset_focus_session();
+                    }
                 }
             }
             Key::F(7) => {
-                if get_focus_dir().is_none() {
-                    focus_dir(
-                        &((*sel.selected_items[0]).as_any().downcast_ref::<History>())
-                            .unwrap()
-                            .dir(),
-                    );
-                } else {
-                    reset_focus_dir();
+                if let Some(history) = selected_history(sel) {
+                    if get_focus_dir().is_none() {
+                        focus_dir(&history.dir());
+                    } else {
+                        reset_focus_dir();
+                    }
                 }
             }
             Key::Ctrl('r') => {
@@ -226,20 +249,12 @@ fn process_result(
 }
 
 fn main() -> Result<()> {
-    let _conn =
-        Connection::open_with_flags(get_histdb_database(), OpenFlags::SQLITE_OPEN_READ_ONLY);
-
     let args: Vec<String> = env::args().collect();
-    let query = |args: Vec<String>| -> String {
-        if args.len() > 1 {
-            return args[1].to_string();
-        }
-        return "".to_string();
-    }(args);
+    let query = args.get(1).cloned().unwrap_or_default();
 
     if query == "--version" {
-        println!("v0.9.6");
-        std::process::exit(1);
+        println!("v{}", env!("CARGO_PKG_VERSION"));
+        return Ok(());
     }
 
     let result = show_history(query);
