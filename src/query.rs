@@ -117,6 +117,11 @@ mod query {
     use super::*;
     use regex::Regex;
 
+    // Keep SQL tests independent of the environment and the UI's global locks.
+    fn build_query(location: &Location, grouped: bool) -> HistoryQuery {
+        build_query_with_context(location, grouped, "4713", "/tmp", "host", None, None)
+    }
+
     #[test]
     fn has_select_fields() {
         for l in vec![

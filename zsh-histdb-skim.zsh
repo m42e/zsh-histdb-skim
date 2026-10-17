@@ -10,7 +10,7 @@ histdb-skim-get-os(){
   os_arch=$(uname -m)
   case "${os_name}:${os_arch}" in
     Darwin:x86_64) print -n -- "darwin-x64" ;;
-    Darwin:arm64) print -n -- "darwin-arm" ;;
+    Darwin:arm64) print -n -- "darwin-aarch64" ;;
     Linux:x86_64) print -n -- "linux-x64" ;;
   esac
 }
@@ -20,7 +20,7 @@ histdb-skim-get-latest-version(){
 }
 
 histdb-skim-download(){
-  local os
+  local os download_path
   os=$(histdb-skim-get-os)
   if [[ -z "$os" ]]; then
     echo "Could not find prebuild executable"
@@ -29,12 +29,15 @@ histdb-skim-download(){
   else
     echo "Downloading binary"
     mkdir -p "$BIN_DIR" || return 1
+    download_path=$(mktemp "${BIN_PATH}.XXXXXX") || return 1
     if curl --fail --silent --show-error --location \
       "https://github.com/m42e/zsh-histdb-skim/releases/download/${HISTB_SKIM_VERSION}/zsh-histdb-skim-${os}" \
-      --output "$BIN_PATH"; then
-      chmod +x "$BIN_PATH"
+      --output "$download_path" &&
+      chmod +x "$download_path" &&
+      mv -f "$download_path" "$BIN_PATH"; then
+      return 0
     else
-      rm -f "$BIN_PATH"
+      rm -f "$download_path"
       return 1
     fi
   fi

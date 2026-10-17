@@ -209,21 +209,17 @@ fn process_result(
                 *grouped = !*grouped;
             }
             Key::F(6) => {
-                if let Some(history) = selected_history(sel) {
-                    if get_focus_session().is_none() {
-                        focus_session(&history.session());
-                    } else {
-                        reset_focus_session();
-                    }
+                if get_focus_session().is_some() {
+                    reset_focus_session();
+                } else if let Some(history) = selected_history(sel) {
+                    focus_session(&history.session());
                 }
             }
             Key::F(7) => {
-                if let Some(history) = selected_history(sel) {
-                    if get_focus_dir().is_none() {
-                        focus_dir(&history.dir());
-                    } else {
-                        reset_focus_dir();
-                    }
+                if get_focus_dir().is_some() {
+                    reset_focus_dir();
+                } else if let Some(history) = selected_history(sel) {
+                    focus_dir(&history.dir());
                 }
             }
             Key::Ctrl('r') => {
@@ -266,4 +262,30 @@ fn main() -> Result<()> {
     }
 
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn clears_locks_without_a_selected_history_item() {
+        let mut location = Location::Everywhere;
+        let mut grouped = true;
+        focus_session("42");
+        focus_dir("/missing");
+        for key in [Key::F(6), Key::F(7)] {
+            let output = Some(SkimOutput {
+                final_event: Event::EvActAbort,
+                is_abort: true,
+                final_key: key,
+                query: "no matches".to_string(),
+                cmd: String::new(),
+                selected_items: vec![],
+            });
+            assert!(!process_result(&output, &mut location, &mut grouped).abort);
+        }
+        assert!(get_focus_session().is_none());
+        assert!(get_focus_dir().is_none());
+    }
 }

@@ -37,11 +37,15 @@ pub fn get_current_dir() -> String {
 
 /// Get the current histdb host from the environment
 pub fn get_current_host() -> String {
-    let mut host = env::var("HISTDB_HOST").unwrap_or(String::from(""));
-    if host.starts_with("'") && host.ends_with("'") {
-        host = host[1..host.len() - 1].to_string()
+    let host = env::var("HISTDB_HOST").unwrap_or(String::from(""));
+    normalize_host(host)
+}
+
+fn normalize_host(mut host: String) -> String {
+    if host.len() >= 2 && host.starts_with("'") && host.ends_with("'") {
+        host = host[1..host.len() - 1].replace("''", "'")
     }
-    return host.to_string();
+    host
 }
 
 /// Disable sorting so history would be kept in historical order
@@ -64,11 +68,15 @@ pub fn get_default_tab() -> Location {
     let default_tab = env::var("HISTDB_DEFAULT_TAB")
         .unwrap_or(String::from("Session"))
         .to_lowercase();
-    match default_tab.as_str() {
+    parse_default_tab(&default_tab)
+}
+
+fn parse_default_tab(default_tab: &str) -> Location {
+    match default_tab {
         "directory" => Location::Directory,
         "machine" => Location::Machine,
         "host" => Location::Machine,
-        "everywhere" => Location::Everywhere,
+        "everywhere" | "everything" => Location::Everywhere,
         "*" => Location::Everywhere,
         _ => Location::Session,
     }
@@ -77,4 +85,22 @@ pub fn get_default_tab() -> Location {
 pub fn get_color() -> String {
     let color = env::var("HISTDB_COLOR").unwrap_or(String::from("auto"));
     return color.to_string();
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{normalize_host, parse_default_tab};
+    use crate::location::Location;
+
+    #[test]
+    fn accepts_documented_everything_tab() {
+        assert!(parse_default_tab("everything") == Location::Everywhere);
+        assert!(parse_default_tab("everywhere") == Location::Everywhere);
+    }
+
+    #[test]
+    fn normalizes_sql_escaped_host_values() {
+        assert_eq!(normalize_host("'host''name'".to_string()), "host'name");
+        assert_eq!(normalize_host("plain-host".to_string()), "plain-host");
+    }
 }

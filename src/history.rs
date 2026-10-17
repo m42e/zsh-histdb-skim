@@ -81,7 +81,7 @@ impl History {
 }
 
 impl SkimItem for History {
-    fn text(&self) -> Cow<str> {
+    fn text(&self) -> Cow<'_, str> {
         let information = format!("{:10} {}", self.format_date(false), self.cmd);
         Cow::Owned(information)
     }
